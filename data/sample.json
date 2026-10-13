@@ -1,0 +1,12 @@
+{
+  "project": "model-registry-board",
+  "resource": "models",
+  "samples": [
+    {
+      "id": "mo1",
+      "name": "churn",
+      "version": "1.2.0",
+      "stage": "Staging"
+    }
+  ]
+}
