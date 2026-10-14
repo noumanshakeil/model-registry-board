@@ -1,53 +1,33 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>{{ title }}</title>
-  <link rel="stylesheet" href="/static/styles.css" />
-</head>
-<body>
-  <main>
-    <h1>{{ title }}</h1>
-    <p class="sub">{{ description }} · LLM <span class="pill">{{ llm_mode }}</span></p>
-    <div class="grid">
-      <section class="card">
-        <h2>Create model</h2>
-        <form method="post" action="/ui/create">
-        <label>name</label><input name="name" placeholder="name" required />
-<label>version</label><input name="version" placeholder="version" required />
-<label>stage</label><input name="stage" placeholder="stage" required />
-          <button type="submit">Save</button>
-        </form>
-        <h2 style="margin-top:1.25rem">AI action: {{ action }}</h2>
-        <p class="sub">{{ action_desc }}</p>
-        <form method="post" action="/ui/action">
-          <label>prompt</label>
-          <textarea name="prompt" rows="4" placeholder="Describe what you need..."></textarea>
-          <button type="submit">Run {{ action }}</button>
-        </form>
-        {% if last_result %}
-        <h3>Last result</h3>
-        <pre>{{ last_result }}</pre>
-        {% endif %}
-      </section>
-      <section class="card">
-        <h2>{{ resource }} ({{ items|length }})</h2>
-        <table>
-          <thead><tr><th>id</th><th>data</th></tr></thead>
-          <tbody>
-          {% for item in items %}
-            <tr>
-              <td>{{ item.id }}</td>
-              <td><code>{{ item }}</code></td>
-            </tr>
-          {% else %}
-            <tr><td colspan="2">No items yet</td></tr>
-          {% endfor %}
-          </tbody>
-        </table>
-      </section>
-    </div>
-  </main>
-</body>
-</html>
+<html lang="en"><head><meta charset="utf-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>{{ title }}</title><link rel="stylesheet" href="/static/styles.css"/></head>
+<body><main>
+<h1>{{ title }}</h1>
+<p class="sub">Register model cards, version artifacts, promote staging → prod.</p>
+<div class="grid">
+<section class="card">
+  <h2>New card</h2>
+  <form method="post" action="/ui/cards"><label>Name</label><input name="name" required/>
+  <label>Description</label><textarea name="description" rows="2"></textarea><button type="submit">Create</button></form>
+  <ul>{% for c in cards %}<li><a href="/?card_id={{ c.id }}">{{ c.name }}</a> <span class="pill">{{ c.owner }}</span></li>{% endfor %}</ul>
+</section>
+<section class="card">
+  {% if card_id %}
+  <h2>Versions</h2>
+  <form method="post" action="/ui/versions"><input type="hidden" name="card_id" value="{{ card_id }}"/>
+  <label>Version</label><input name="version" value="v1.0.0"/>
+  <label>Artifact URI</label><input name="artifact_uri" value="s3://models/demo"/>
+  <button type="submit">Register</button></form>
+  {% for v in versions %}
+  <div class="card" style="margin:.4rem 0">
+    <span class="pill">{{ v.version }}</span> <span class="pill">{{ v.stage }}</span>
+    <div class="sub">{{ v.artifact_uri }}</div>
+    <form method="post" action="/ui/promote" style="display:inline"><input type="hidden" name="card_id" value="{{ card_id }}"/>
+    <input type="hidden" name="version_id" value="{{ v.id }}"/><button type="submit">Promote</button></form>
+    <form method="post" action="/ui/demote" style="display:inline"><input type="hidden" name="card_id" value="{{ card_id }}"/>
+    <input type="hidden" name="version_id" value="{{ v.id }}"/><button type="submit">Demote</button></form>
+  </div>
+  {% endfor %}
+  {% else %}<p class="sub">Create a model card to begin.</p>{% endif %}
+</section>
+</div></main></body></html>
